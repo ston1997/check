@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+
+  postgresql:
+    image: postgres:14
+    container_name: postgresql_check
+    restart: always
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: check_db
+      POSTGRES_PORT: 5432
+
+  wkhtmltopdf:
+    image: openlabs/docker-wkhtmltopdf-aas:latest
+    volumes:
+      - wkhtmltopdf_data:/data
+
+
+  backend:
+    container_name: check_api_backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: check_api_backend
+    restart: always
+    depends_on:
+      - postgresql
+      - redis
+    command: python manage.py runserver 0.0.0.0:8000
+#      - "gunicorn"
+#      - "--bind"
+#      - ":8000"
+#      - "check.wsgi:application"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: check_db
+      POSTGRES_PORT: 5432
+    ports:
+      - 8000:8000
+
+    volumes:
+      - media:/media/
+      - static:/static/
+
+  celery-worker:
+    command: celery -A check worker -l INFO
+    restart: always
+    build:
+      context: .
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: check_db
+      POSTGRES_PORT: 5432
+    depends_on:
+      - postgresql
+      - redis
+
+    volumes:
+      - media:/media/
+      - static:/static/
+
+  redis:
+    image: redis
+    ports:
+      - "6380:6379"
+
+volumes:
+  postgresql_data:
+  wkhtmltopdf_data:
+  media:
+  static:

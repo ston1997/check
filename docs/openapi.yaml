@@ -1,0 +1,177 @@
+openapi: 3.0.3
+info:
+  title: Check API Service
+  version: '1.0'
+paths:
+  /api/check/{id}/:
+    get:
+      operationId: downloadCheck
+      description: Endpoint for download check file
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: 'A unique integer value identifying this check.'
+        schema:
+          type: string
+      responses:
+        '200':
+          content:
+            'application/pdf':
+              schema:
+                type: string
+                format: binary
+          description: 'check found'
+      tags:
+      - api
+  /api/printer/{printer_id}/check/:
+    get:
+      operationId: listCheck
+      description: Return collection of checks for chosen printer.
+      parameters:
+      - name: printer_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    example: 123
+                  next:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=4
+                  previous:
+                    type: string
+                    nullable: true
+                    format: uri
+                    example: http://api.example.org/accounts/?page=2
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CheckList'
+          description: ''
+      tags:
+      - api
+  /api/point/{point_id}/check/:
+    post:
+      operationId: createCheck
+      description: API for create all checks types in current point for chosen order.
+      parameters:
+      - name: point_id
+        in: path
+        required: true
+        description: ''
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema: {}
+          application/x-www-form-urlencoded:
+            schema: {}
+          multipart/form-data:
+            schema: {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: {}
+          description: ''
+      tags:
+      - api
+  /api/check/{id}/update/:
+    patch:
+      operationId: set_printedCheck
+      description: Endpoint for mark PRINTED for check file.
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: 'A unique integer value identifying this check.'
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckDetail'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckDetail'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckDetail'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckDetail'
+          description: ''
+      tags:
+      - api
+components:
+  schemas:
+    CheckDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          enum:
+          - KITCHEN
+          - CLIENT
+          type: string
+        order:
+          type: object
+        status:
+          enum:
+          - NEW
+          - RENDERED
+          - PRINTED
+          type: string
+        pdf_file:
+          type: string
+          format: binary
+          nullable: true
+        printer:
+          type: integer
+      required:
+      - type
+      - printer
+    CheckList:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        type:
+          enum:
+          - KITCHEN
+          - CLIENT
+          type: string
+        status:
+          enum:
+          - NEW
+          - RENDERED
+          - PRINTED
+          type: string
+      required:
+      - type

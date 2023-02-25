@@ -1,0 +1,22 @@
+[
+{
+  "model": "check.printer",
+  "pk": 1,
+  "fields": {
+    "name": "Борова",
+    "api_key": "qaz",
+    "check_type": "CLIENT",
+    "point_id": 1
+  }
+},
+{
+  "model": "check.printer",
+  "pk": 2,
+  "fields": {
+    "name": "Борова",
+    "api_key": "cich",
+    "check_type": "KITCHEN",
+    "point_id": 1
+  }
+}
+]
